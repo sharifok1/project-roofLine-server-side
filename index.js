@@ -18,6 +18,8 @@ async function run() {
         await client.connect();
         const database = client.db('RoofLine');
         const users = database.collection('userCollection');
+        const services = database.collection('services');
+        const reviews = database.collection('reviews');
         // const OurServices = database.collection('OurServices');
         // const myUserCollection = database.collection('users');
       
@@ -37,10 +39,16 @@ async function run() {
         res.json(result)
         console.log(result);
       })
-    //  Get Metod  get all RiderCollection---------------------API--get all
+    //  Get Metod  get all ---------------------API--get all
      app.get('/userCollection', async(req, res)=>{
       const user = users.find({});
       const result = await user.toArray();
+      res.send(result)
+    })
+    // get services data
+     app.get('/services', async(req, res)=>{
+      const service = services.find({});
+      const result = await service.toArray();
       res.send(result)
     })
       //
@@ -65,8 +73,19 @@ async function run() {
         res.json({admin: isAdmin})
       })
     
-      
-    
+      //Post method  review (single document)-----------API--review
+     app.post('/reviews', async(req,res)=>{
+        const review = req.body;
+        const result = await reviews.insertOne(review);
+        res.json(result)
+        console.log(result)
+      })
+    //get method for review
+    app.get('/reviews', async(req, res)=>{
+        const review = reviews.find({});
+        const result = await review.toArray();
+        res.send(result)
+      })
      
     // Get method for find specefic document by id---------API-- get one
     // app.get('/myDocs/:id', async(req,res)=>{
