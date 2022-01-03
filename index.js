@@ -48,7 +48,7 @@ async function run() {
     // get services data
      app.get('/services', async(req, res)=>{
       const service = services.find({});
-      const result = await service.toArray();
+      const result = await service.limit(4).toArray();
       res.send(result)
     })
       //
