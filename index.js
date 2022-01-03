@@ -3,18 +3,33 @@ const { MongoClient } = require("mongodb");
 const cors = require("cors");
 const app = express();
 require("dotenv").config();
-// const  ObjectId = require('mongodb').ObjectId;
+const ObjectId = require("mongodb").ObjectId;
 const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
-
+const admin = require("firebase-admin");
 app.use(cors());
 
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.z9rhw.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
+
+async function verifyToken(req, res, next) {
+  if (req.headers?.authorization?.startsWith("Bearer ")) {
+    const token = req.headers.authorization.split(" ")[1];
+    try {
+      const decodedUser = await admin.auth().verifyIdToken(token);
+      req.decodedEmail = decodedUser.email;
+    } catch {}
+  }
+  next();
+}
 
 async function run() {
   try {
@@ -57,12 +72,25 @@ async function run() {
       const result = await user.toArray();
       res.send(result);
     });
-    // get services data
+    // service post ---------------------- post services
+    app.post("/services", async (req, res) => {
+      const newServices = req.body;
+      const result = await services.insertOne(newServices);
+      res.json(result);
+      console.log(result);
+    });
+    // get -----------------services data
     app.get("/services", async (req, res) => {
       const service = services.find({});
       const result = await service.toArray();
-      res.send(result);
+      const count = await service.count()
+      res.send({
+        count,
+        result});
     });
+
+
+
     // get single service data
     app.get("/services/:id", async (req, res) => {
       const id = req.params.id;
@@ -85,14 +113,36 @@ async function run() {
     })
     //
     //  //update method for make admin-----------------------admin api
-    app.put("/users/admin", async (req, res) => {
+
+    // app.put("/users/admin", async (req, res) => {
+    //   const user = req.body;
+    //   // console.log(user)
+    //   const filter = { email: user.email };
+    //   const updateDoc = { $set: { role: "admin" } };
+    //   const result = await users.updateOne(filter, updateDoc);
+    //   res.json(result);
+    // });
+
+    app.put("/users/admin", verifyToken, async (req, res) => {
       const user = req.body;
-      // console.log(user)
-      const filter = { email: user.email };
-      const updateDoc = { $set: { role: "admin" } };
-      const result = await users.updateOne(filter, updateDoc);
-      res.json(result);
+      const requester = req.decodedEmail;
+      if (requester) {
+        const requesterAccount = await usersCollection.findOne({
+          email: requester,
+        });
+        if (requesterAccount.role === "admin") {
+          const filter = { email: user.email };
+          const updateDoc = { $set: { role: "admin" } };
+          const result = await usersCollection.updateOne(filter, updateDoc);
+          res.json(result);
+        }
+      } else {
+        res
+          .status(403)
+          .json({ message: "you do not have access to make admin" });
+      }
     });
+
     //get admin user-----------------------------------get admin user
     app.get("/users/:email", async (req, res) => {
       const email = req.params.email;
