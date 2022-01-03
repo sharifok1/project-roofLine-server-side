@@ -64,6 +64,13 @@ async function run() {
       const result = await user.toArray();
       res.send(result);
     });
+    // service post ---------------------- post services
+    app.post("/services", async (req, res) => {
+      const newServices = req.body;
+      const result = await services.insertOne(newServices);
+      res.json(result);
+      console.log(result);
+    });
     // get -----------------services data
     app.get("/services", async (req, res) => {
       const service = services.find({});
