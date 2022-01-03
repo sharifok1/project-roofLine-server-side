@@ -39,6 +39,8 @@ async function run() {
     const services = database.collection("services");
     const reviews = database.collection("reviews");
     const addOrder = database.collection("order");
+    const career = database.collection("career");
+    const gmail = database.collection("gmail");
     // const OurServices = database.collection('OurServices');
     // const myUserCollection = database.collection('users');
 
@@ -46,6 +48,12 @@ async function run() {
     app.post("/userCollection", async (req, res) => {
       const user = req.body;
       const result = await users.insertOne(user);
+      res.json(result);
+      console.log(result);
+    });
+    app.post("/career", async (req, res) => {
+      const user = req.body;
+      const result = await career.insertOne(user);
       res.json(result);
       console.log(result);
     });
