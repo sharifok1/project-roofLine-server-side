@@ -64,12 +64,18 @@ async function run() {
       const result = await user.toArray();
       res.send(result);
     });
-    // get services data
+    // get -----------------services data
     app.get("/services", async (req, res) => {
       const service = services.find({});
-      const result = await service.limit(4).toArray();
-      res.send(result);
+      const result = await service.toArray();
+      const count = await service.count()
+      res.send({
+        count,
+        result});
     });
+
+
+
     // get single service data
     app.get("/services/:id", async (req, res) => {
       const id = req.params.id;
