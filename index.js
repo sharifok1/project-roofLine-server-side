@@ -38,6 +38,7 @@ async function run() {
     const users = database.collection("userCollection");
     const services = database.collection("services");
     const reviews = database.collection("reviews");
+    const addOrder = database.collection("order");
     // const OurServices = database.collection('OurServices');
     // const myUserCollection = database.collection('users');
 
@@ -72,11 +73,23 @@ async function run() {
     // get single service data
     app.get("/services/:id", async (req, res) => {
       const id = req.params.id;
-      console.log("getting specific service", id);
       const query = { _id: ObjectId(id) };
       const service = await services.findOne(query);
       res.json(service);
     });
+
+    //Add order proces
+    app.post('/order', (req, res) => {
+      console.log(req.body);
+      addOrder.insertOne(req.body).then((result) => {
+        res.send(result);
+      })
+    })
+    //get my orders
+    app.get('/order/:email', async (req, res) => {
+      const result = await order.find({ email: req.params.email }).toArray();
+      res.send(result);
+    })
     //
     //  //update method for make admin-----------------------admin api
 
