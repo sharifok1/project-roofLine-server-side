@@ -73,8 +73,17 @@ async function run() {
     });
     // get -----------------services data
     app.get("/services", async (req, res) => {
+      console.log(req.query)
       const service = services.find({});
-      const result = await service.toArray();
+      const page = req.query.page;
+      const size = parseInt(req.query.size);
+      let result;
+      if(page){
+        result = await service.skip(page*size).limit(size).toArray();
+      }
+      else{
+        result = await service.toArray();
+      }  
       const count = await service.count()
       res.send({
         count,
@@ -85,6 +94,7 @@ async function run() {
 
     // get single service data
     app.get("/services/:id", async (req, res) => {
+
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const service = await services.findOne(query);
