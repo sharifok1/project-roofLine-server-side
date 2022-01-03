@@ -17,10 +17,6 @@
     "mongodb": "^4.2.2",
     "nodemon": "^2.0.15"
   },
-<<<<<<< HEAD
-=======
-  "devDependencies": {},
->>>>>>> aab80056c90713d8a200b575aae9ceeed9f697da
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shihab-2021/Team32-first-project-server-side-.git"
