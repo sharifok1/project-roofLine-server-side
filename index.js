@@ -41,6 +41,7 @@ async function run() {
     const addOrder = database.collection("order");
     const career = database.collection("career");
     const gmail = database.collection("gmail");
+    const bookingCollection = database.collection("bookingData");
     // const OurServices = database.collection('OurServices');
     // const myUserCollection = database.collection('users');
 
@@ -107,6 +108,66 @@ async function run() {
       const query = { _id: ObjectId(id) };
       const service = await services.findOne(query);
       res.json(service);
+    });
+
+    // for getting all booking
+    app.get("/allBooking", async (req, res) => {
+      const cursor = bookingCollection.find({});
+      const services = await cursor.toArray();
+      res.json(services);
+    });
+
+    // for getting booking for specified email
+    app.get("/booking", verifyToken, async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const cursor = bookingCollection.find(query);
+      const services = await cursor.toArray();
+      res.json(services);
+    });
+
+    app.get("/booking/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log("getting specific service", id);
+      const query = { _id: ObjectId(id) };
+      const service = await bookingCollection.findOne(query);
+      res.json(service);
+    });
+
+    // for delete any booking
+    app.delete("/booking/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await bookingCollection.deleteOne(query);
+      console.log("deleting user with id ", result);
+      res.json(result);
+    });
+
+    // for posting new booking
+    app.post("/booking", async (req, res) => {
+      const bookingData = req.body;
+      const result = await bookingCollection.insertOne(bookingData);
+      console.log(result);
+      res.json(result);
+    });
+
+    // for update condition pending to shipped
+    app.put("/booking/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          condition: "shipped",
+        },
+      };
+      const result = await bookingCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      console.log("updating", id);
+      res.json(result);
     });
 
     //Add order proces
