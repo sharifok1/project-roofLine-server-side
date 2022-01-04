@@ -26,7 +26,7 @@ async function verifyToken(req, res, next) {
     try {
       const decodedUser = await admin.auth().verifyIdToken(token);
       req.decodedEmail = decodedUser.email;
-    } catch { }
+    } catch {}
   }
   next();
 }
@@ -41,6 +41,7 @@ async function run() {
     const addOrder = database.collection("order");
     const career = database.collection("career");
     const gmail = database.collection("gmail");
+    const bookingCollection = database.collection("bookingData");
     // const OurServices = database.collection('OurServices');
     // const myUserCollection = database.collection('users');
 
@@ -109,6 +110,66 @@ async function run() {
       res.json(service);
     });
 
+    // for getting all booking
+    app.get("/allBooking", async (req, res) => {
+      const cursor = bookingCollection.find({});
+      const services = await cursor.toArray();
+      res.json(services);
+    });
+
+    // for getting booking for specified email
+    app.get("/booking", verifyToken, async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const cursor = bookingCollection.find(query);
+      const services = await cursor.toArray();
+      res.json(services);
+    });
+
+    app.get("/booking/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log("getting specific service", id);
+      const query = { _id: ObjectId(id) };
+      const service = await bookingCollection.findOne(query);
+      res.json(service);
+    });
+
+    // for delete any booking
+    app.delete("/booking/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await bookingCollection.deleteOne(query);
+      console.log("deleting user with id ", result);
+      res.json(result);
+    });
+
+    // for posting new booking
+    app.post("/booking", async (req, res) => {
+      const bookingData = req.body;
+      const result = await bookingCollection.insertOne(bookingData);
+      console.log(result);
+      res.json(result);
+    });
+
+    // for update condition pending to shipped
+    app.put("/booking/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          condition: "shipped",
+        },
+      };
+      const result = await bookingCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      console.log("updating", id);
+      res.json(result);
+    });
+
     //Add order proces
     app.post("/order", (req, res) => {
       console.log(req.body);
@@ -121,6 +182,14 @@ async function run() {
       const result = await order.find({ email: req.params.email }).toArray();
       res.send(result);
     });
+    //deleteOrder
+    app.delete("/services/:id", async (req, res) => {
+      const result = await services.deleteOne({
+        _id: ObjectId(req.params.id),
+      });
+      res.send(result);
+    });
+
     //
     //  //update method for make admin-----------------------admin api
 
@@ -137,13 +206,13 @@ async function run() {
       const user = req.body;
       const requester = req.decodedEmail;
       if (requester) {
-        const requesterAccount = await usersCollection.findOne({
+        const requesterAccount = await users.findOne({
           email: requester,
         });
         if (requesterAccount.role === "admin") {
           const filter = { email: user.email };
           const updateDoc = { $set: { role: "admin" } };
-          const result = await usersCollection.updateOne(filter, updateDoc);
+          const result = await users.updateOne(filter, updateDoc);
           res.json(result);
         }
       } else {
