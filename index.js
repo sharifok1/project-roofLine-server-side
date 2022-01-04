@@ -244,8 +244,19 @@ async function run() {
     //get method for review
     app.get("/reviews", async (req, res) => {
       const review = reviews.find({});
-      const result = await review.toArray();
-      res.send(result);
+      const page = req.query.page;
+      const size = parseInt(req.query.size);
+      let result;
+      if (page) {
+        result = await review.skip(page * size).limit(size).toArray();
+      } else {
+        result = await review.toArray();
+      }
+      const count = await review.count();
+      res.send({
+        count,
+        result,
+      });
     });
 
     // Get method for find specefic document by id---------API-- get one
