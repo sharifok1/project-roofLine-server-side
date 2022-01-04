@@ -14,7 +14,7 @@ const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.z9rhw.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.avm9c.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -81,28 +81,28 @@ async function run() {
     });
     // get -----------------services data
     app.get("/services", async (req, res) => {
-      console.log(req.query)
+      console.log(req.query);
       const service = services.find({});
       const page = req.query.page;
       const size = parseInt(req.query.size);
       let result;
-      if(page){
-        result = await service.skip(page*size).limit(size).toArray();
-      }
-      else{
+      if (page) {
+        result = await service
+          .skip(page * size)
+          .limit(size)
+          .toArray();
+      } else {
         result = await service.toArray();
-      }  
-      const count = await service.count()
+      }
+      const count = await service.count();
       res.send({
         count,
-        result});
+        result,
+      });
     });
-
-
 
     // get single service data
     app.get("/services/:id", async (req, res) => {
-
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const service = await services.findOne(query);
@@ -110,17 +110,17 @@ async function run() {
     });
 
     //Add order proces
-    app.post('/order', (req, res) => {
+    app.post("/order", (req, res) => {
       console.log(req.body);
       addOrder.insertOne(req.body).then((result) => {
         res.send(result);
-      })
-    })
+      });
+    });
     //get my orders
-    app.get('/order/:email', async (req, res) => {
+    app.get("/order/:email", async (req, res) => {
       const result = await order.find({ email: req.params.email }).toArray();
       res.send(result);
-    })
+    });
     //
     //  //update method for make admin-----------------------admin api
 
