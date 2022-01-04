@@ -26,7 +26,7 @@ async function verifyToken(req, res, next) {
     try {
       const decodedUser = await admin.auth().verifyIdToken(token);
       req.decodedEmail = decodedUser.email;
-    } catch {}
+    } catch { }
   }
   next();
 }
@@ -86,16 +86,17 @@ async function run() {
       const page = req.query.page;
       const size = parseInt(req.query.size);
       let result;
-      if(page){
-        result = await service.skip(page*size).limit(size).toArray();
+      if (page) {
+        result = await service.skip(page * size).limit(size).toArray();
       }
-      else{
+      else {
         result = await service.toArray();
-      }  
+      }
       const count = await service.count()
       res.send({
         count,
-        result});
+        result
+      });
     });
 
 
@@ -121,6 +122,14 @@ async function run() {
       const result = await order.find({ email: req.params.email }).toArray();
       res.send(result);
     })
+    //deleteOrder
+    app.delete('/services/:id', async (req, res) => {
+      const result = await order.deleteOne({
+        _id: ObjectId(req.params.id)
+      });
+      res.send(result);
+    });
+
     //
     //  //update method for make admin-----------------------admin api
 
