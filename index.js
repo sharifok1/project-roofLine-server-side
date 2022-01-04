@@ -26,7 +26,7 @@ async function verifyToken(req, res, next) {
     try {
       const decodedUser = await admin.auth().verifyIdToken(token);
       req.decodedEmail = decodedUser.email;
-    } catch { }
+    } catch {}
   }
   next();
 }
@@ -87,17 +87,6 @@ async function run() {
       const size = parseInt(req.query.size);
       let result;
       if (page) {
-<<<<<<< HEAD
-        result = await service.skip(page * size).limit(size).toArray();
-      }
-      else {
-        result = await service.toArray();
-      }
-      const count = await service.count()
-      res.send({
-        count,
-        result
-=======
         result = await service
           .skip(page * size)
           .limit(size)
@@ -109,7 +98,6 @@ async function run() {
       res.send({
         count,
         result,
->>>>>>> 8d29303f091784bf1d320dfe6434b4fcfcf2d0fc
       });
     });
 
@@ -132,19 +120,15 @@ async function run() {
     app.get("/order/:email", async (req, res) => {
       const result = await order.find({ email: req.params.email }).toArray();
       res.send(result);
-<<<<<<< HEAD
-    })
+    });
     //deleteOrder
-    app.delete('/services/:id', async (req, res) => {
-      const result = await order.deleteOne({
-        _id: ObjectId(req.params.id)
+    app.delete("/services/:id", async (req, res) => {
+      const result = await services.deleteOne({
+        _id: ObjectId(req.params.id),
       });
       res.send(result);
     });
 
-=======
-    });
->>>>>>> 8d29303f091784bf1d320dfe6434b4fcfcf2d0fc
     //
     //  //update method for make admin-----------------------admin api
 
@@ -161,13 +145,13 @@ async function run() {
       const user = req.body;
       const requester = req.decodedEmail;
       if (requester) {
-        const requesterAccount = await usersCollection.findOne({
+        const requesterAccount = await users.findOne({
           email: requester,
         });
         if (requesterAccount.role === "admin") {
           const filter = { email: user.email };
           const updateDoc = { $set: { role: "admin" } };
-          const result = await usersCollection.updateOne(filter, updateDoc);
+          const result = await users.updateOne(filter, updateDoc);
           res.json(result);
         }
       } else {
